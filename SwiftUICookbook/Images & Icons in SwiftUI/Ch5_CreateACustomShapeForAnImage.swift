@@ -13,7 +13,7 @@ struct Ch5_CreateACustomShapeForAnImage: View {
         Image(.twoCapybaras)
             .resizable()
             .aspectRatio(contentMode: .fit)
-            .clipShape(StarShape(points: 5, smoothness: 0.5))
+            .clipShape(StarShape(points: 6, smoothness: 0.5))
     }
 }
 
@@ -29,17 +29,27 @@ struct StarShape: Shape {
         let innerRadius = outerRadius * smoothness          // 透過smoothness計算內圓半徑
         
         let path = Path { path in
-            let angleIncrement = .pi * 2 / CGFloat(points)  // 計算每個尖角的角度間距（2π = 360º，假設points = 5，每個尖角的角度差就是72º）
+            let angleIncrement = .pi * 2 / CGFloat(points)  // 計算每個尖角的角度間距（2π = 360º，假設points = 6，每個尖角的角度差就是60º）
             let rotationOffset = CGFloat.pi / 2             // 增加旋轉偏移量
             
             for point in 0..<points {
-                // 每個point的外角度(eg. (72º * 0) - 90º = -90º, (72º * 1) - 90º = -18º...etc)
+                // 每個point的外角度(eg. (60º * 0) - 90º = -90º, (60º * 1) - 90º = -30º...etc)
+                // 第一個point的角度是-90º，第二個point的角度是-30º...etc
                 let angle = angleIncrement * CGFloat(point) - rotationOffset
-                // 每個point的內角度(eg. -90º + (72º / 2) = -54º, -18º + (72º / 2) = 18º...etc)
+                // 每個point的內角度(eg. -90º + (60º / 2) = -60º, -30º + (60º / 2) = 0º...etc)
                 let tippedAngle = angle + angleIncrement / 2
                 
-                let outerPoint = CGPoint(x: center.x + cos(angle) * outerRadius, y: center.y + sin(angle) * outerRadius)
-                let innerPoint = CGPoint(x: center.x + cos(tippedAngle) * innerRadius, y: center.y + sin(tippedAngle) * innerRadius)
+                // 直角座標x, y轉換成極座標
+                // outerPointX = 中心x(起始點) + r * cosθ(cos角度)
+                // outerPointY = 中心y(起始點) + r * sinθ(sin角度)
+                let outerPointX = center.x + cos(angle) * outerRadius
+                let outerPointY = center.y + sin(angle) * outerRadius
+                
+                let innerPointX = center.x + cos(tippedAngle) * innerRadius
+                let innerPointY = center.y + sin(tippedAngle) * innerRadius
+                
+                let outerPoint = CGPoint(x: outerPointX, y: outerPointY)
+                let innerPoint = CGPoint(x: innerPointX, y: innerPointY)
                 
                 if point == 0 {
                     path.move(to: outerPoint)
